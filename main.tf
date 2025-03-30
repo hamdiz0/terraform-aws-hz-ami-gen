@@ -43,12 +43,13 @@ resource "aws_ami_from_instance" "custom_ami" {
   snapshot_without_reboot = true
 }
 
-# use aws cli to terminate the instance
+# use aws cli to terminate the resources
 resource "null_resource" "terminate_ami_instance" {
   count = var.delete_resources ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
       aws ec2 terminate-instances --instance-ids ${aws_instance.custom_ami_instance.id}
+      aws ec2 wait instance-terminated --instance-ids ${aws_instance.custom_ami_instance.id}
       aws ec2 delete-security-group --group-id ${aws_security_group.custom_ami_sg.id}
       aws ec2 delete-key-pair --key-name ${aws_key_pair.key.key_name}
     EOT
